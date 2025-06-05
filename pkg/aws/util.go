@@ -15,51 +15,7 @@ import (
 
 // GetLocalRegion gets the region ID from the instance metadata using IMDSv2, falling back to AWS_REGION env.
 func GetLocalRegion() string {
-	// First, get a token for IMDSv2
-	tokenReq, err := http.NewRequest("PUT", "http://169.254.169.254/latest/api/token", nil)
-	if err != nil {
-		klog.Errorf("unable to create token request, %v", err)
-		return os.Getenv("AWS_REGION")
-	}
-	tokenReq.Header.Set("X-aws-ec2-metadata-token-ttl-seconds", "21600") // 6 hours
-
-	client := &http.Client{Timeout: 5 * time.Second}
-	tokenResp, err := client.Do(tokenReq)
-	if err != nil {
-		klog.Errorf("unable to get IMDSv2 token, %v", err)
-		return os.Getenv("AWS_REGION")
-	}
-	defer tokenResp.Body.Close()
-
-	token, err := io.ReadAll(tokenResp.Body)
-	if err != nil {
-		klog.Errorf("cannot read token response, %v", err)
-		return os.Getenv("AWS_REGION")
-	}
-
-	// Now use the token to get the availability zone
-	azReq, err := http.NewRequest("GET", "http://169.254.169.254/latest/meta-data/placement/availability-zone", nil)
-	if err != nil {
-		klog.Errorf("unable to create AZ request, %v", err)
-		return os.Getenv("AWS_REGION")
-	}
-	azReq.Header.Set("X-aws-ec2-metadata-token", string(token))
-
-	azResp, err := client.Do(azReq)
-	if err != nil {
-		klog.Errorf("unable to get current region information, %v", err)
-		return os.Getenv("AWS_REGION")
-	}
-	defer azResp.Body.Close()
-
-	body, err := io.ReadAll(azResp.Body)
-	if err != nil {
-		klog.Errorf("cannot read response from instance metadata, %v", err)
-		return os.Getenv("AWS_REGION")
-	}
-
-	// strip the last character from AZ to get region ID
-	return string(body[0 : len(body)-1])
+	return os.Getenv("AWS_REGION")
 }
 
 func toCloudWatchQuery(externalMetric *v1alpha1.ExternalMetric) cloudwatch.GetMetricDataInput {
