@@ -1,16 +1,11 @@
 package aws
 
 import (
-	"io"
-	"net/http"
 	"os"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/awslabs/k8s-cloudwatch-adapter/pkg/apis/metrics/v1alpha1"
-
-	"k8s.io/klog"
 )
 
 // GetLocalRegion gets the region ID from the instance metadata using IMDSv2, falling back to AWS_REGION env.
